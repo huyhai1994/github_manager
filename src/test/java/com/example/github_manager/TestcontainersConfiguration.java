@@ -9,10 +9,10 @@ import org.testcontainers.utility.DockerImageName;
 @TestConfiguration(proxyBeanMethods = false)
 class TestcontainersConfiguration {
 
-	@Bean
-	@ServiceConnection
-	LgtmStackContainer grafanaLgtmContainer() {
-		return new LgtmStackContainer(DockerImageName.parse("grafana/otel-lgtm:latest"));
-	}
+    @Bean
+    @ServiceConnection
+    LgtmStackContainer grafanaLgtmContainer() {
+        return new LgtmStackContainer(DockerImageName.parse("grafana/otel-lgtm:latest"));
+    }
 
 }
