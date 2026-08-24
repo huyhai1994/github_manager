@@ -1,7 +1,7 @@
 package com.example.github_manager.repositories_sync.component;
 
 import com.example.github_manager.repositories_sync.configuration.rest_client.GithubRestClientProperties;
-import com.example.github_manager.repositories_sync.dto.GitHubRawResponse;
+import com.example.github_manager.repositories_sync.dto.GithubRawResponse;
 import com.example.github_manager.repositories_sync.dto.GithubRepositoryResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,10 +14,11 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
+import tools.jackson.core.type.TypeReference;
+import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -55,12 +56,20 @@ class GitHubRestClientMockTest {
             throws IOException {
 
         stubGetOwnedRepositoriesSuccessfully();
-        ResponseEntity<List<GithubRepositoryResponse>> responseEntity = gitHubRestClient.getOwnedRepositories(PAGE, properties.pageSize());
+        GithubRawResponse gitHubRawResponse = gitHubRestClient.getOwnedRepositories(PAGE, properties.pageSize());
+        int statusCode = gitHubRawResponse.statusCode();
+        String body = gitHubRawResponse.body();
 
-        List<GithubRepositoryResponse> repositories = responseEntity.getBody();
-        int statusCode = responseEntity.getStatusCode().value();
+        String linkHeader = gitHubRawResponse.headers()
+                .getFirst(HttpHeaders.LINK);
 
-        assertThat(repositories).hasSize(1);
+        assertThat(linkHeader).contains(
+                "<https://api.github.com/user/repos"
+        );
+
+        List<GithubRepositoryResponse> repositories = new ObjectMapper().readValue(body, new TypeReference<>() {
+        });
+
         assertThat(statusCode).isEqualTo(200);
 
         GithubRepositoryResponse repository = repositories.stream().findFirst().orElseThrow();
