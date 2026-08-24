@@ -1,8 +1,11 @@
-package com.example.github_manager.get_metadata.component;
+package com.example.github_manager.repositories_sync.component;
 
-import com.example.github_manager.get_metadata.dto.GithubRepositoryResponse;
+import com.example.github_manager.repositories_sync.dto.GitHubRawResponse;
+import com.example.github_manager.repositories_sync.dto.GithubRepositoryResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestClient;
 
@@ -12,23 +15,26 @@ import java.util.List;
 @RequiredArgsConstructor
 public class GitHubRestClient {
     private final RestClient restClient;
+    private static final MediaType GITHUB_MEDIA_TYPE =
+            MediaType.parseMediaType("application/vnd.github+json");
 
-    public List<GithubRepositoryResponse> getOwnedRepositories(
+    public ResponseEntity<List<GithubRepositoryResponse>> getOwnedRepositories(
             int page,
             int pageSize
     ) {
-        List<GithubRepositoryResponse> repositories = restClient.get()
+
+        return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/user/repos")
                         .queryParam("affiliation", "owner")
                         .queryParam("per_page", pageSize)
                         .queryParam("page", page)
                         .build())
+                .accept(GITHUB_MEDIA_TYPE)
+                .header("X-GitHub-Api-Version", "2022-11-28")
                 .retrieve()
-                .body(new ParameterizedTypeReference<>() {
+                .toEntity(new ParameterizedTypeReference<>() {
                 });
-
-        return repositories == null ? List.of() : repositories;
     }
 
 

@@ -1,0 +1,11 @@
+server:
+  port: 20999
+clients:
+  github-service:
+    base-url: https://api.github.com
+    repos: ${OWNED_GITHUB_REPOS}
+    connect-timeout: 3s
+    read-timeout: 10s
+    access-token: ${GITHUB_ACCESS_TOKEN}
+    get-repositories-path: "/user/repos"
+    page-size: 100

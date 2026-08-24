@@ -1,4 +1,4 @@
-package com.example.github_manager.get_metadata.configuration.rest_client;
+package com.example.github_manager.repositories_sync.configuration.rest_client;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

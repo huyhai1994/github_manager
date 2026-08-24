@@ -1,7 +1,8 @@
-package com.example.github_manager.get_metadata.component;
+package com.example.github_manager.repositories_sync.component;
 
-import com.example.github_manager.get_metadata.configuration.rest_client.GithubRestClientProperties;
-import com.example.github_manager.get_metadata.dto.GithubRepositoryResponse;
+import com.example.github_manager.repositories_sync.configuration.rest_client.GithubRestClientProperties;
+import com.example.github_manager.repositories_sync.dto.GitHubRawResponse;
+import com.example.github_manager.repositories_sync.dto.GithubRepositoryResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -13,6 +14,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.client.MockRestServiceServer;
 import org.springframework.web.client.RestClient;
@@ -53,11 +55,13 @@ class GitHubRestClientMockTest {
             throws IOException {
 
         stubGetOwnedRepositoriesSuccessfully();
+        ResponseEntity<List<GithubRepositoryResponse>> responseEntity = gitHubRestClient.getOwnedRepositories(PAGE, properties.pageSize());
 
-        List<GithubRepositoryResponse> repositories =
-                gitHubRestClient.getOwnedRepositories(PAGE, properties.pageSize());
+        List<GithubRepositoryResponse> repositories = responseEntity.getBody();
+        int statusCode = responseEntity.getStatusCode().value();
 
         assertThat(repositories).hasSize(1);
+        assertThat(statusCode).isEqualTo(200);
 
         GithubRepositoryResponse repository = repositories.stream().findFirst().orElseThrow();
 
@@ -71,8 +75,7 @@ class GitHubRestClientMockTest {
         assertThat(repository.visibility()).isEqualTo("public");
 
         assertThat(repository.htmlUrl())
-                .isEqualTo(
-                        "https://github.com/huyhai1994/-customer-manage-aspect"
+                .isEqualTo("https://github.com/huyhai1994/-customer-manage-aspect"
                 );
 
         assertThat(repository.createdAt())
@@ -94,23 +97,40 @@ class GitHubRestClientMockTest {
         String responseBody = new ClassPathResource("get_repo.json")
                 .getContentAsString(StandardCharsets.UTF_8);
 
+        String linkHeader = """
+                <https://api.github.com/user/repos?affiliation=owner&per_page=100&page=2>; rel="next", \
+                <https://api.github.com/user/repos?affiliation=owner&per_page=100&page=5>; rel="last"
+                """.trim();
+
         mockServer.expect(
                         requestTo(startsWith(
-                                properties.baseUrl() + properties.getRepositoriesPath()
+                                properties.baseUrl()
+                                        + properties.getRepositoriesPath()
                         ))
                 )
                 .andExpect(method(HttpMethod.GET))
                 .andExpect(queryParam("affiliation", "owner"))
-                .andExpect(queryParam("per_page", String.valueOf(properties.pageSize())))
+                .andExpect(queryParam(
+                        "per_page",
+                        String.valueOf(properties.pageSize())
+                ))
                 .andExpect(queryParam("page", String.valueOf(PAGE)))
                 .andExpect(header(
                         HttpHeaders.ACCEPT,
-                        MediaType.APPLICATION_JSON_VALUE
+                        "application/vnd.github+json"
                 ))
-                .andRespond(withSuccess(
-                        responseBody,
-                        MediaType.APPLICATION_JSON
-                ));
+                .andExpect(header(
+                        "X-GitHub-Api-Version",
+                        "2022-11-28"
+                ))
+                .andRespond(
+                        withSuccess(responseBody, MediaType.APPLICATION_JSON)
+                                .header(HttpHeaders.LINK, linkHeader)
+                                .header("X-RateLimit-Limit", "5000")
+                                .header("X-RateLimit-Remaining", "4999")
+                                .header("X-RateLimit-Reset", "1787558400")
+
+                );
     }
 
     @TestConfiguration(proxyBeanMethods = false)

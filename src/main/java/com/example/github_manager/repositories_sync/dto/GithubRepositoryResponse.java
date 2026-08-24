@@ -1,4 +1,4 @@
-package com.example.github_manager.get_metadata.dto;
+package com.example.github_manager.repositories_sync.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
