@@ -15,11 +15,13 @@ import java.util.Objects;
 @RequiredArgsConstructor
 public class JacksonGithubResponseDeserializer implements GithubResponseDeserializer {
 
+    private final ObjectMapper objectMapper;
+
     @Override
     public GithubPageResponse deserialize(GithubRawResponse gitHubRawResponse) {
         String rawBody = gitHubRawResponse.body();
-        Objects.nonNull(rawBody);
-        List<GithubRepositoryResponse> repositories = new ObjectMapper().readValue(rawBody, new TypeReference<>() {
+        Objects.requireNonNull(rawBody);
+        List<GithubRepositoryResponse> repositories = objectMapper.readValue(rawBody, new TypeReference<>() {
         });
         return GithubPageResponse.builder()
                 .repositories(repositories).build();

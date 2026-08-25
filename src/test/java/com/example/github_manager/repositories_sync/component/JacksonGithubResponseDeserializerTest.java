@@ -4,18 +4,18 @@ import com.example.github_manager.repositories_sync.dto.GithubPageResponse;
 import com.example.github_manager.repositories_sync.dto.GithubRawResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.ClassPathResource;
+import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.exc.MismatchedInputException;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.assertj.core.api.AssertionsForClassTypes.assertThatThrownBy;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class JacksonGithubResponseDeserializerTest {
 
-    private final JacksonGithubResponseDeserializer jacksonGithubResponseDeserializer = new JacksonGithubResponseDeserializer();
+    private final JacksonGithubResponseDeserializer jacksonGithubResponseDeserializer = new JacksonGithubResponseDeserializer(new ObjectMapper());
 
 
     @Test
