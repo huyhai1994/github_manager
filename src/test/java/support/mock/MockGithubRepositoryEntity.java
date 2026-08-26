@@ -3,7 +3,7 @@ package support.mock;
 import com.example.github_manager.repositories_sync.dto.RepositoriesState;
 import com.example.github_manager.repositories_sync.entity.GithubRepository;
 
-import java.time.LocalDateTime;
+import java.time.Instant;
 
 public final class MockGithubRepositoryEntity {
 
@@ -20,15 +20,14 @@ public final class MockGithubRepositoryEntity {
         public static final String HTML_URL =
                 "https://github.com/" + FULL_NAME;
 
-        public static final LocalDateTime GITHUB_CREATED_AT =
-                LocalDateTime.of(2026, 8, 1, 10, 0);
+        public static final Instant GITHUB_CREATED_AT =
+                Instant.parse("2026-08-01T10:00:00Z");
 
-        public static final LocalDateTime GITHUB_UPDATED_AT =
-                LocalDateTime.of(2026, 8, 24, 15, 30);
+        public static final Instant GITHUB_UPDATED_AT =
+                Instant.parse("2026-08-24T15:30:00Z");
 
-        public static final LocalDateTime GITHUB_PUSHED_AT =
-                LocalDateTime.of(2026, 8, 24, 15, 25);
-
+        public static final Instant GITHUB_PUSHED_AT =
+                Instant.parse("2026-08-24T15:25:00Z");
         public static final RepositoriesState STATUS =
                 RepositoriesState.SYNCING;
 
@@ -65,15 +64,14 @@ public final class MockGithubRepositoryEntity {
         public static final String HTML_URL =
                 "https://github.com/" + FULL_NAME;
 
-        public static final LocalDateTime GITHUB_CREATED_AT =
-                LocalDateTime.of(2026, 8, 1, 10, 0);
+        public static final Instant GITHUB_CREATED_AT =
+                Instant.parse("2026-08-01T10:00:00Z");
 
-        public static final LocalDateTime GITHUB_UPDATED_AT =
-                LocalDateTime.of(2026, 8, 24, 15, 30);
+        public static final Instant GITHUB_UPDATED_AT =
+                Instant.parse("2026-08-24T15:30:00Z");
 
-        public static final LocalDateTime GITHUB_PUSHED_AT =
-                LocalDateTime.of(2026, 8, 24, 15, 25);
-
+        public static final Instant GITHUB_PUSHED_AT =
+                Instant.parse("2026-08-24T15:25:00Z");
         public static final RepositoriesState STATUS =
                 RepositoriesState.SYNCING;
 
