@@ -32,13 +32,13 @@ public class GithubRepository {
     private String htmlUrl;
 
     @Column(name = "github_updated_at", nullable = false)
-    private LocalDateTime githubUpdatedAt;
+    private Instant githubUpdatedAt;
 
     @Column(name = "github_created_at", nullable = false)
-    private LocalDateTime githubCreatedAt;
+    private Instant githubCreatedAt;
 
     @Column(name = "github_pushed_at", nullable = false)
-    private LocalDateTime githubPushedAt;
+    private Instant githubPushedAt;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 30, nullable = false)

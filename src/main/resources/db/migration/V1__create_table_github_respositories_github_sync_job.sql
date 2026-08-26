@@ -16,4 +16,20 @@ CREATE TABLE IF NOT EXISTS `github_repositories`
     PRIMARY KEY (`id`)
 );
 
+CREATE TABLE IF NOT EXISTS `github_sync_job`
+(
+    `id`             BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+    `status`         VARCHAR(255)    NOT NULL,
+    `created_at`     DATETIME        NOT NULL,
+    `updated_at`     DATETIME,
+    `started_at`     DATETIME,
+    `heartbeat_at`   DATETIME,
+    `submitted_at`   DATETIME,
+    `next_run_at`    DATETIME,
+    `sync_failed_at` DATETIME,
+    `synced_at`      DATETIME,
+    PRIMARY KEY (`id`)
+);
+
+
 
