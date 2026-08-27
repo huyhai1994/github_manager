@@ -8,28 +8,34 @@ import com.example.github_manager.repositories_sync.dto.GithubRepositoryResponse
 import com.example.github_manager.repositories_sync.entity.GithubRepository;
 import com.example.github_manager.repositories_sync.repositories.GithubRepositoryRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class GithubPageSyncingService {
     private final GithubRepositoryRepository githubRepositoryRepository;
     private final GitHubRestClient gitHubRestClient;
     private final GithubResponseDeserializer githubResponseDeserializer;
-    private final int PAGE_SIZE = 100;
 
     public void syncAllPages() {
         int page = 0;
         while (true) {
             GithubPageResponse githubPageResponses = getGithubPageResponses(page);
-            if (githubPageResponses.repositories().isEmpty()) break;
+            if (isEmpty(githubPageResponses)) break;
             mapAndSaveAll(githubPageResponses);
             page++;
         }
     }
 
+    private static boolean isEmpty(GithubPageResponse githubPageResponses) {
+        return githubPageResponses.repositories().isEmpty();
+    }
+
     private GithubPageResponse getGithubPageResponses(int page) {
-        GithubRawResponse githubRawResponses = gitHubRestClient.getOwnedRepositories(page, PAGE_SIZE);
+        GithubRawResponse githubRawResponses = gitHubRestClient.getOwnedRepositories(page);
+        log.info("GET_RAW_RESPONSE = {}", githubRawResponses.toString());
         return githubResponseDeserializer.deserialize(githubRawResponses);
     }
 

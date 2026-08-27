@@ -43,7 +43,6 @@ class GithubRepositoryRepositoryIntegrationTest extends AbstractIntegrationTest 
         Long id = saveEntity1AndReturnId();
         GithubRepository persistedGithub = githubRepository.findById(id).orElseThrow();
         assertThat(persistedGithub).isNotNull();
-        assertThat(persistedGithub.getId()).isNotNull();
         assertThat(persistedGithub.getFullName()).isEqualTo(MockGithubRepositoryEntity.Entity1.FULL_NAME);
         assertThat(persistedGithub.getGithubId()).isEqualTo(MockGithubRepositoryEntity.Entity1.GITHUB_ID);
     }
@@ -72,11 +71,10 @@ class GithubRepositoryRepositoryIntegrationTest extends AbstractIntegrationTest 
                 .isEqualTo(MockGithubRepositoryEntity.Entity1.OWNER_LOGIN + "_1");
         assertThat(updatedList).hasSize(2);
     }
-
     private Long saveEntity1AndReturnId() {
         GithubRepository entity1 = MockGithubRepositoryEntity.Entity1.create();
         GithubRepository savedEntity1 =
                 githubRepository.saveAndFlush(entity1);
-        return savedEntity1.getId();
+        return savedEntity1.getGithubId();
     }
 }

@@ -56,7 +56,7 @@ class GitHubRestClientMockTest {
             throws IOException {
 
         stubGetOwnedRepositoriesSuccessfully();
-        GithubRawResponse gitHubRawResponse = gitHubRestClient.getOwnedRepositories(PAGE, properties.pageSize());
+        GithubRawResponse gitHubRawResponse = gitHubRestClient.getOwnedRepositories(PAGE);
         int statusCode = gitHubRawResponse.statusCode();
         String body = gitHubRawResponse.body();
 

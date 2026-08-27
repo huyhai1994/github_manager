@@ -8,7 +8,6 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import java.time.Instant;
-import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -16,9 +15,6 @@ import java.time.LocalDateTime;
 @Table(name = "github_repositories")
 public class GithubRepository {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long id;
-
     @Column(name = "github_id", nullable = false, unique = true)
     private Long githubId;
 
