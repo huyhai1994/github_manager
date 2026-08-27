@@ -4,15 +4,22 @@ import com.example.github_manager.repositories_sync.component.GitHubRestClient;
 import com.example.github_manager.repositories_sync.component.GithubResponseDeserializer;
 import com.example.github_manager.repositories_sync.dto.GithubPageResponse;
 import com.example.github_manager.repositories_sync.dto.GithubRawResponse;
+import com.example.github_manager.repositories_sync.entity.GithubRepository;
 import com.example.github_manager.repositories_sync.repositories.GithubRepositoryRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import support.mock.MockGithubRepositoryResponse;
+import tools.jackson.core.JacksonException;
 
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.*;
@@ -58,6 +65,19 @@ class GithubPageSyncingServiceMockTest {
                 .thenReturn(emptyPage);
         // act
         githubPageSyncingService.syncAllPages();
+
+        // verify
+        verifyNoInteractions(githubRepositoryRepository);
+    }
+
+    @Test
+    void syncAllPages_whenThrowJacksonException_thenDoNotSaveDB() {
+        // arrange
+        when(gitHubRestClient.getOwnedRepositories(anyInt(), anyInt())).thenReturn(new GithubRawResponse(200, null, "sample"));
+
+        when(githubResponseDeserializer.deserialize(any(GithubRawResponse.class))).thenThrow(JacksonException.class);
+        // act
+        assertThrows(JacksonException.class, () -> githubPageSyncingService.syncAllPages());
 
         // verify
         verifyNoInteractions(githubRepositoryRepository);
