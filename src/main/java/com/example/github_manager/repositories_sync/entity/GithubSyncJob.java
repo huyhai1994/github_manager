@@ -15,11 +15,12 @@ import java.time.Instant;
 @Setter
 public class GithubSyncJob {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
-    private GithubSyncJobStatus status;
+    private GithubSyncJobStatus status = GithubSyncJobStatus.READY;
 
     @CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)

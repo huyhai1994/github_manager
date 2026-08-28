@@ -13,7 +13,6 @@ public final class MockGithubJobEntity {
     public static GithubSyncJob createReadyJob() {
         GithubSyncJob entity = new GithubSyncJob();
 
-        entity.setId(1L);
         entity.setStatus(GithubSyncJobStatus.READY);
         entity.setCreatedAt(Instant.parse("2026-08-25T01:00:00Z"));
         entity.setUpdatedAt(Instant.parse("2026-08-25T01:00:00Z"));
@@ -28,7 +27,6 @@ public final class MockGithubJobEntity {
     public static GithubSyncJob createSubmittedJob() {
         GithubSyncJob entity = new GithubSyncJob();
 
-        entity.setId(2L);
         entity.setStatus(GithubSyncJobStatus.SUBMITTED);
         entity.setCreatedAt(Instant.parse("2026-08-25T03:00:00Z"));
         entity.setUpdatedAt(Instant.parse("2026-08-25T03:10:00Z"));
@@ -43,7 +41,6 @@ public final class MockGithubJobEntity {
     public static GithubSyncJob createSyncingJob() {
         GithubSyncJob entity = new GithubSyncJob();
 
-        entity.setId(2L);
         entity.setStatus(GithubSyncJobStatus.SYNCING);
         entity.setCreatedAt(Instant.parse("2026-08-25T03:00:00Z"));
         entity.setSubmittedAt(Instant.parse("2026-08-25T03:01:00Z"));
