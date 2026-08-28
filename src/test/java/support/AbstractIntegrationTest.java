@@ -1,37 +1,56 @@
 package support;
 
+import org.mockserver.client.MockServerClient;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.springframework.test.context.DynamicPropertySource;
-import org.testcontainers.junit.jupiter.Testcontainers;
+import org.testcontainers.mockserver.MockServerContainer;
 import org.testcontainers.mysql.MySQLContainer;
+import org.testcontainers.utility.DockerImageName;
 
-@Testcontainers
 public abstract class AbstractIntegrationTest {
 
-    private static final String MYSQL_DATABASE_NAME =
-            "github_manager_test";
+    private static final DockerImageName MYSQL_IMAGE =
+            DockerImageName.parse("mysql:8.0.43");
 
-    private static final String MYSQL_USERNAME = "test";
-    private static final String MYSQL_USER_PASSWORD = "test";
-    private static final String MYSQL_DOCKER_IMAGE = "mysql:8.0";
+    private static final DockerImageName MOCKSERVER_IMAGE =
+            DockerImageName.parse("mockserver/mockserver")
+                    .withTag(
+                            "mockserver-" +
+                                    MockServerClient.class
+                                            .getPackage()
+                                            .getImplementationVersion()
+                    );
 
-    private static final MySQLContainer mysqlDb;
+    protected static final MySQLContainer MYSQL =
+            new MySQLContainer(MYSQL_IMAGE)
+                    .withDatabaseName("github_manager_test")
+                    .withUsername("test")
+                    .withPassword("test");
 
+    protected static final MockServerContainer MOCK_SERVER =
+            new MockServerContainer(MOCKSERVER_IMAGE);
 
     static {
-        mysqlDb = new MySQLContainer(MYSQL_DOCKER_IMAGE)
-                .withDatabaseName(MYSQL_DATABASE_NAME)
-                .withUsername(MYSQL_USERNAME)
-                .withPassword(MYSQL_USER_PASSWORD);
-        mysqlDb.start();
+        MYSQL.start();
+        MOCK_SERVER.start();
     }
 
     @DynamicPropertySource
-    static void registerProperties(
-            DynamicPropertyRegistry registry
-    ) {
-        registry.add("spring.datasource.url", mysqlDb::getJdbcUrl);
-        registry.add("spring.datasource.username", mysqlDb::getUsername);
-        registry.add("spring.datasource.password", mysqlDb::getPassword);
+    static void registerProperties(DynamicPropertyRegistry registry) {
+        registry.add("spring.datasource.url", MYSQL::getJdbcUrl);
+        registry.add("spring.datasource.username", MYSQL::getUsername);
+        registry.add("spring.datasource.password", MYSQL::getPassword);
+
+        registry.add(
+                "clients.github-service.base-url",
+                MOCK_SERVER::getEndpoint
+        );
+    }
+
+    protected MockServerClient mockServerClient() {
+        return new MockServerClient(
+                MOCK_SERVER.getHost(),
+                MOCK_SERVER.getServerPort()
+        );
     }
 }

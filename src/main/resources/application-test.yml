@@ -1,16 +1,12 @@
 server:
   port: 20999
-clients:
-  github-service:
-    base-url: https://api.github.com
-    repos: ${OWNED_GITHUB_REPOS}
-    connect-timeout: 3s
-    read-timeout: 10s
-    access-token: ${GITHUB_ACCESS_TOKEN}
-    get-repositories-path: "/user/repos"
-    page-size: 100
 spring:
+  application:
+    name: github_manager_test
   datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
     hikari:
       maximum-pool-size: 5
       minimum-idle: 1
@@ -39,3 +35,17 @@ logging:
         stat: DEBUG
         orm:
           results: TRACE
+github-sync-executor:
+  core-pool-size: 1
+  maximum-pool-size: 3
+  queue-capacity: 100
+  thread-name-prefix: "GithubSyncWorkerTest-"
+clients:
+  github-service:
+    base-url: https://api.github.com
+    repos: ${OWNED_GITHUB_REPOS}
+    connect-timeout: 3s
+    read-timeout: 10s
+    access-token: ${GITHUB_ACCESS_TOKEN}
+    get-repositories-path: "/user/repos"
+    page-size: 100
