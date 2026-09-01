@@ -12,6 +12,11 @@ public record GithubRestClientProperties(
         Duration connectTimeout,
         Duration readTimeout,
         String accessToken,
-        Integer pageSize
+        Integer pageSize,
+        String mediaType,
+        String path,
+        String affiliation,
+        String apiVersion
+
 ) {
 }

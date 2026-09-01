@@ -49,3 +49,9 @@ clients:
     access-token: ${GITHUB_ACCESS_TOKEN}
     get-repositories-path: "/user/repos"
     page-size: 100
+    media-type: "application/vnd.github+json"
+    path: "/user/repos"
+    affiliation: "owner"
+    api-version: "2022-11-28"
+
+

@@ -1,6 +1,6 @@
 package com.example.github_manager.repositories_sync.service;
 
-import com.example.github_manager.repositories_sync.component.GitHubRestClient;
+import com.example.github_manager.repositories_sync.component.GithubServiceRestClient;
 import com.example.github_manager.repositories_sync.component.GithubResponseDeserializer;
 import com.example.github_manager.repositories_sync.dto.GithubPageResponse;
 import com.example.github_manager.repositories_sync.dto.GithubRawResponse;
@@ -14,7 +14,6 @@ import support.mock.MockGithubRepositoryResponse;
 import tools.jackson.core.JacksonException;
 
 
-
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -24,7 +23,7 @@ import static org.mockito.Mockito.*;
 class GithubPageSyncingServiceMockTest {
 
     @Mock
-    GitHubRestClient gitHubRestClient;
+    GithubServiceRestClient gitHubServiceRestClient;
 
     @Mock
     GithubResponseDeserializer githubResponseDeserializer;
@@ -32,13 +31,16 @@ class GithubPageSyncingServiceMockTest {
     @Mock
     GithubRepositoryRepository githubRepositoryRepository;
 
+    @Mock
+    GithubRepoUpsertService githubRepoUpsertService;
+
     @InjectMocks
     GithubPageSyncingService githubPageSyncingService;
 
     @Test
     void syncAllPages_whenFetchAndDeserializePageSucceed_thenSaveToDB() {
         // arrange
-        when(gitHubRestClient.getOwnedRepositories(anyInt())).thenReturn(new GithubRawResponse(200, null, "sample"));
+        when(gitHubServiceRestClient.getOwnedRepositories(anyInt())).thenReturn(new GithubRawResponse(200, null, "sample"));
         GithubPageResponse page1 = new GithubPageResponse(MockGithubRepositoryResponse.repositories());
         GithubPageResponse emptyPage = new GithubPageResponse(MockGithubRepositoryResponse.emptyRepositories());
 
@@ -48,13 +50,13 @@ class GithubPageSyncingServiceMockTest {
         githubPageSyncingService.syncAllPages();
 
         // verify
-        verify(githubRepositoryRepository, times(1)).saveAll(any());
+        verify(githubRepoUpsertService, times(1)).upsertAll(any());
     }
 
     @Test
     void syncAllPages_whenPageIsEmpty_thenDoNotSaveToDB() {
         // arrange
-        when(gitHubRestClient.getOwnedRepositories(anyInt())).thenReturn(new GithubRawResponse(200, null, "sample"));
+        when(gitHubServiceRestClient.getOwnedRepositories(anyInt())).thenReturn(new GithubRawResponse(200, null, "sample"));
         GithubPageResponse emptyPage = new GithubPageResponse(MockGithubRepositoryResponse.emptyRepositories());
 
         when(githubResponseDeserializer.deserialize(any(GithubRawResponse.class)))
@@ -69,7 +71,7 @@ class GithubPageSyncingServiceMockTest {
     @Test
     void syncAllPages_whenThrowJacksonException_thenDoNotSaveDB() {
         // arrange
-        when(gitHubRestClient.getOwnedRepositories(anyInt())).thenReturn(new GithubRawResponse(200, null, "sample"));
+        when(gitHubServiceRestClient.getOwnedRepositories(anyInt())).thenReturn(new GithubRawResponse(200, null, "sample"));
 
         when(githubResponseDeserializer.deserialize(any(GithubRawResponse.class))).thenThrow(JacksonException.class);
         // act

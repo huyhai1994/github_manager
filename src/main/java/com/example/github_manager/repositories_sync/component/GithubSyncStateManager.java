@@ -18,6 +18,12 @@ public class GithubSyncStateManager {
     private final Clock clock;
 
     @Transactional
+    public void changeStateFromReadyToSubmitted(Long jobId) {
+        int affectedRow = githubSyncJobRepository.markSubmittedFromReady(jobId, Instant.now(clock));
+        checkJobState(affectedRow);
+    }
+
+    @Transactional
     public void changeStateFromSubmittedToSyncing(Long jobId) {
         int affectedRow = githubSyncJobRepository.markSyncingFromSubmitted(jobId, Instant.now(clock));
         checkJobState(affectedRow);

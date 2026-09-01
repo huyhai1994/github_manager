@@ -4,8 +4,8 @@ import com.example.github_manager.repositories_sync.exception.InvalidJobStateTra
 import com.example.github_manager.repositories_sync.service.GithubPageSyncingService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
-import tools.jackson.core.JacksonException;
 
 @Component
 @RequiredArgsConstructor
@@ -15,12 +15,14 @@ public class GithubSyncWorker {
     private final GithubSyncStateManager githubSyncStateManager;
     private final GithubPageSyncingService githubPageSyncingService;
 
+    @Async("githubSyncExecutor")
     public void sync(Long jobId) {
         try {
             startSyncing(jobId);
             try {
                 syncAllPages();
-            } catch (JacksonException e) {
+            } catch (Exception e) {
+                log.error("SYNC_ERROR ex={}", e.getMessage());
                 handleSyncFailure(jobId);
                 return;
             }

@@ -1,30 +1,31 @@
 package com.example.github_manager.repositories_sync.service;
 
-import com.example.github_manager.repositories_sync.component.GitHubRestClient;
+import com.example.github_manager.repositories_sync.component.GithubServiceRestClient;
 import com.example.github_manager.repositories_sync.component.GithubResponseDeserializer;
 import com.example.github_manager.repositories_sync.dto.GithubPageResponse;
 import com.example.github_manager.repositories_sync.dto.GithubRawResponse;
 import com.example.github_manager.repositories_sync.dto.GithubRepositoryResponse;
+import com.example.github_manager.repositories_sync.dto.RepositoriesState;
 import com.example.github_manager.repositories_sync.entity.GithubRepository;
-import com.example.github_manager.repositories_sync.repositories.GithubRepositoryRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class GithubPageSyncingService {
-    private final GithubRepositoryRepository githubRepositoryRepository;
-    private final GitHubRestClient gitHubRestClient;
+    private final GithubServiceRestClient gitHubServiceRestClient;
     private final GithubResponseDeserializer githubResponseDeserializer;
+    private final GithubRepoUpsertService githubRepoUpsertService;
 
     public void syncAllPages() {
         int page = 0;
         while (true) {
             GithubPageResponse githubPageResponses = getGithubPageResponses(page);
             if (isEmpty(githubPageResponses)) break;
-            mapAndSaveAll(githubPageResponses);
+            upsertAll(githubPageResponses);
             page++;
         }
     }
@@ -34,13 +35,13 @@ public class GithubPageSyncingService {
     }
 
     private GithubPageResponse getGithubPageResponses(int page) {
-        GithubRawResponse githubRawResponses = gitHubRestClient.getOwnedRepositories(page);
-        log.info("GET_RAW_RESPONSE = {}", githubRawResponses.toString());
+        GithubRawResponse githubRawResponses = gitHubServiceRestClient.getOwnedRepositories(page);
+        log.debug("GET_RAW_RESPONSE = {}", githubRawResponses.toString());
         return githubResponseDeserializer.deserialize(githubRawResponses);
     }
 
-    private void mapAndSaveAll(GithubPageResponse githubPageResponses) {
-        githubRepositoryRepository.saveAll(
+    private void upsertAll(GithubPageResponse githubPageResponses) {
+        githubRepoUpsertService.upsertAll(
                 githubPageResponses
                         .repositories()
                         .stream()
@@ -57,6 +58,7 @@ public class GithubPageSyncingService {
         githubRepository.setGithubCreatedAt(r.createdAt());
         githubRepository.setGithubUpdatedAt(r.updatedAt());
         githubRepository.setGithubPushedAt(r.pushedAt());
+        githubRepository.setStatus(RepositoriesState.SYNCING);
         githubRepository.setIsPrivate(r.privateRepository());
         return githubRepository;
     }
