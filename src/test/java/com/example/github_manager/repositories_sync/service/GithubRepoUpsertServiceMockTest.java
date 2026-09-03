@@ -15,7 +15,7 @@ import support.mock.MockGithubRepositoryEntity;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
@@ -46,7 +46,40 @@ class GithubRepoUpsertServiceMockTest {
         verify(githubRepositoryRepository)
                 .saveAll(argumentCaptor.capture());
         assertThat(argumentCaptor.getValue().size()).isEqualTo(2);
+    }
 
+    @Test
+    @DisplayName("when there are new repo and existing repo, then save new repository, and update existing repository")
+    void upsert_saveNewRepoAndUpdateExisting() {
+        List<GithubRepository> incomingRepositories = new ArrayList<>();
+
+        GithubRepository newRepo = MockGithubRepositoryEntity.Entity1.create();
+        GithubRepository incomingExistingRepo = MockGithubRepositoryEntity.Entity2.create();
+        GithubRepository existingRepo = MockGithubRepositoryEntity.Entity2.create();
+
+        existingRepo.setFullName("old-name");
+        incomingExistingRepo.setFullName("new-name");
+
+        incomingRepositories.add(newRepo);
+        incomingRepositories.add(incomingExistingRepo);
+
+        when(githubRepositoryRepository
+                .findAllById(
+                        List.of(newRepo.getGithubId(), incomingExistingRepo.getGithubId()
+                        )))
+                .thenReturn(
+                        List.of(existingRepo));
+        githubRepoUpsertService.upsertAll(incomingRepositories);
+
+        ArgumentCaptor<List<GithubRepository>> argumentCaptor = ArgumentCaptor
+                .forClass(List.class);
+
+        verify(githubRepositoryRepository, times(1))
+                .saveAll(argumentCaptor.capture());
+
+        assertThat(argumentCaptor.getValue()).containsExactly(newRepo);
+
+        assertThat(existingRepo.getFullName()).isEqualTo("new-name");
     }
 
     @Test
