@@ -1,0 +1,15 @@
+package com.example.github_manager.shared.response;
+
+
+public record ApiResponse<T>(
+        boolean success,
+        T data,
+        ApiError error) {
+    public static <T> ApiResponse<T> success(T data) {
+        return new ApiResponse<>(true, data, null);
+    }
+
+    public static ApiResponse<Void> failure(ApiError error) {
+        return new ApiResponse<>(false, null, error);
+    }
+}
