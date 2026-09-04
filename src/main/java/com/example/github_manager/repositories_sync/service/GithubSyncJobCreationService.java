@@ -7,7 +7,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class GithubManagerService {
+public class GithubSyncJobCreationService {
     private final GithubSyncJobRepository githubSyncJobRepository;
 
     public Long createSyncJob() {

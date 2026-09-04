@@ -37,6 +37,9 @@ class GithubSyncJobRepositoryIntegrationTest extends AbstractIntegrationTest {
     @Autowired
     TransactionTemplate transactionTemplate;
 
+    @Autowired
+    EntityManager entityManager;
+
     Clock fixedClock = Clock.fixed(
             Instant.parse("2026-08-26T00:00:00Z"),
             ZoneOffset.UTC
@@ -151,5 +154,19 @@ class GithubSyncJobRepositoryIntegrationTest extends AbstractIntegrationTest {
                 throw new RuntimeException(e);
             }
         }
+    }
+
+    @Test
+    void findDueReadyJob_returnIdWhenThereIsDueReadyJob() {
+        GithubSyncJob dueReadJob = githubSyncJobRepository
+                .saveAndFlush(MockGithubJobEntity.createReadyJob());
+        GithubSyncJob failedJob = githubSyncJobRepository
+                .saveAndFlush(MockGithubJobEntity.createFailedJob());
+        entityManager.flush();
+        entityManager.clear();
+        Instant now = Instant.parse("2026-08-25T03:00:00Z");
+        Long foundJobId = githubSyncJobRepository.findDueReadyJob(now).orElseThrow();
+        assertThat(foundJobId).isNotNull();
+        assertThat(foundJobId).isEqualTo(dueReadJob.getId());
     }
 }

@@ -1,6 +1,7 @@
 package com.example.github_manager.repositories_sync.service;
 
 import com.example.github_manager.repositories_sync.configuration.rest_client.GithubRestClientProperties;
+import com.example.github_manager.repositories_sync.entity.GithubRepository;
 import com.example.github_manager.repositories_sync.repositories.GithubRepositoryRepository;
 import com.example.github_manager.repositories_sync.repositories.GithubSyncJobRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -17,7 +18,9 @@ import support.AbstractIntegrationTest;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockserver.model.HttpRequest.request;
 import static org.mockserver.model.HttpResponse.response;
 
@@ -115,5 +118,7 @@ class GithubPageSyncingServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     void syncAllPages_whenFetchAllPages_thenSaveAllToDB() {
         githubPageSyncingService.syncAllPages();
+        List<GithubRepository> githubRepositories = githubRepositoryRepository.findAll();
+        assertThat(githubRepositories.size()).isNotZero();
     }
 }

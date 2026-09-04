@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.Instant;
+import java.util.Optional;
 
 public interface GithubSyncJobRepository extends JpaRepository<GithubSyncJob, Long> {
 
@@ -82,6 +83,17 @@ public interface GithubSyncJobRepository extends JpaRepository<GithubSyncJob, Lo
             """)
     int markSyncFailedFromSyncing(
             @Param("id") Long id,
+            @Param("now") Instant now
+    );
+
+    @Query("""
+            select sj.id
+            from GithubSyncJob sj 
+            where  sj.status = GithubSyncJobStatus.READY
+              and sj.nextRunAt <= :now
+              limit 1
+            """)
+    Optional<Long> findDueReadyJob(
             @Param("now") Instant now
     );
 

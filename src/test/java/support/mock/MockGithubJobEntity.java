@@ -38,6 +38,18 @@ public final class MockGithubJobEntity {
         return entity;
     }
 
+    public static GithubSyncJob createFailedJob() {
+        GithubSyncJob entity = new GithubSyncJob();
+
+        entity.setStatus(GithubSyncJobStatus.SYNCING_FAILED);
+        entity.setCreatedAt(Instant.parse("2026-08-25T03:00:00Z"));
+        entity.setUpdatedAt(Instant.parse("2026-08-25T03:10:00Z"));
+        entity.setSubmittedAt(Instant.parse("2026-08-25T03:01:00Z"));
+        entity.setFailedAt(Instant.parse("2026-08-25T03:02:00Z"));
+
+        return entity;
+    }
+
     public static GithubSyncJob createSyncingJob() {
         GithubSyncJob entity = new GithubSyncJob();
 
