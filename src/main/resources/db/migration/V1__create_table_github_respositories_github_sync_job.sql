@@ -24,7 +24,7 @@ CREATE TABLE IF NOT EXISTS `github_sync_job`
     `started_at`     DATETIME,
     `heartbeat_at`   DATETIME,
     `submitted_at`   DATETIME,
-    `next_run_at`    DATETIME,
+    `next_run_at`    DATETIME        NOT NULL,
     `sync_failed_at` DATETIME,
     `synced_at`      DATETIME,
     PRIMARY KEY (`id`)

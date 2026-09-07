@@ -23,13 +23,14 @@ public class GithubSyncScheduler {
     private final GithubSyncWorker githubSyncWorker;
     private final GithubSyncStateManager githubSyncStateManager;
 
-    @Scheduled(fixedDelayString = "${github-sync-scheduler.delay}", timeUnit = TimeUnit.MILLISECONDS)
+    @Scheduled(fixedDelayString = "${github-sync-scheduler.delay}", timeUnit = TimeUnit.SECONDS)
     @WithSpan("github-sync-scheduler-repo-syncing")
     public void repoSyncing() {
         githubSyncJobRepository
                 .findDueReadyJob(Instant.now(clock))
                 .ifPresent(
                         (id) -> {
+                            log.info("REPO_SYNCING jobId={}", id);
                             githubSyncStateManager.changeStateFromReadyToSubmitted(id);
                             githubSyncWorker.sync(id);
                         }

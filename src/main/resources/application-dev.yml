@@ -39,7 +39,7 @@ github-sync-executor:
   queue-capacity: 100
   thread-name-prefix: "GithubSyncWorkerDev-"
 github-sync-scheduler:
-  delay: 100
+  delay: 10
 clients:
   github-service:
     base-url: https://api.github.com

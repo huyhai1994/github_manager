@@ -13,8 +13,6 @@ import org.springframework.test.context.ActiveProfiles;
 import support.AbstractIntegrationTest;
 import support.mock_server.MockServerSupport;
 
-
-import java.io.IOException;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;

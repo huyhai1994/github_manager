@@ -41,7 +41,7 @@ github-sync-executor:
   queue-capacity: 100
   thread-name-prefix: "GithubSyncWorkerTest-"
 github-sync-scheduler:
-  delay: 100
+  delay: 3600
 clients:
   github-service:
     base-url: https://api.github.com

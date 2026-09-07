@@ -9,10 +9,10 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.DynamicPropertyRegistrar;
 import org.testcontainers.mockserver.MockServerContainer;
-import org.testcontainers.shaded.org.checkerframework.checker.units.qual.K;
 import org.testcontainers.utility.DockerImageName;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
@@ -96,7 +96,7 @@ public class MockServerSupport {
                             .getContentAsString(StandardCharsets.UTF_8);
                     stubGithubPage(k, pageResponse);
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    throw new UncheckedIOException(e);
                 }
             });
         }
