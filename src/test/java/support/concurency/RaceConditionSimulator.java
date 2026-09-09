@@ -40,9 +40,9 @@ public class RaceConditionSimulator implements AutoCloseable {
         return new RaceConditionSimulator(concurrentRequestCount);
     }
 
-    public <T> List<T> execute(Callable<T> task) {
+    public <T> List<TaskResult<T>> execute(Callable<T> task) {
 
-        List<CompletableFuture<T>> futures =
+        List<CompletableFuture<TaskResult<T>>> futures =
                 createConcurrentRequests(task);
         awaitWorkersReady();
         startRunningWorker();
@@ -91,13 +91,20 @@ public class RaceConditionSimulator implements AutoCloseable {
         }
     }
 
-    private <T> List<CompletableFuture<T>> createConcurrentRequests(
+    private <T> List<CompletableFuture<TaskResult<T>>> createConcurrentRequests(
             Callable<T> task
     ) {
         return IntStream.range(0, concurrentRequestCount)
                 .mapToObj(index ->
                         CompletableFuture.supplyAsync(
-                                () -> executeTask(task),
+                                () -> {
+                                    try {
+                                        T result = executeTask(task);
+                                        return TaskResult.success(result);
+                                    } catch (Exception e) {
+                                        return TaskResult.<T>failure(e);
+                                    }
+                                },
                                 executorService
                         )
                 )

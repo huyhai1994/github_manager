@@ -46,6 +46,7 @@ public final class MockGithubJobEntity {
         entity.setUpdatedAt(Instant.parse("2026-08-25T03:10:00Z"));
         entity.setSubmittedAt(Instant.parse("2026-08-25T03:01:00Z"));
         entity.setFailedAt(Instant.parse("2026-08-25T03:02:00Z"));
+        entity.setNextRunAt(Instant.parse("2026-08-25T04:02:00Z"));
 
         return entity;
     }

@@ -10,9 +10,11 @@ import org.springframework.boot.jdbc.test.autoconfigure.AutoConfigureTestDatabas
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionCallback;
 import org.springframework.transaction.support.TransactionTemplate;
 import support.AbstractIntegrationTest;
 import support.concurency.RaceConditionSimulator;
+import support.concurency.TaskResult;
 import support.mock.MockGithubJobEntity;
 
 import java.time.Clock;
@@ -20,6 +22,8 @@ import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
@@ -58,18 +62,16 @@ class GithubSyncJobRepositoryIntegrationTest extends AbstractIntegrationTest {
         Long id = persistedSyncJob.getId();
 
         try (RaceConditionSimulator raceConditionSimulator = RaceConditionSimulator.getRaceConditionSimulator(2)) {
-            try {
-                List<Integer> results = raceConditionSimulator.execute(
-                        () -> transactionTemplate.execute(status ->
-                                githubSyncJobRepository.markSubmittedFromReady(id, fixedClock.instant())
-                        ));
+            List<Integer> results = raceConditionSimulator.execute(
+                            () -> transactionTemplate.execute(status ->
+                                    githubSyncJobRepository.markSubmittedFromReady(id, fixedClock.instant())
+                            )).stream()
+                    .map(r -> r.result())
+                    .toList();
 
-                assertThat(results).containsExactlyInAnyOrder(
-                        1, 0
-                );
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                throw new RuntimeException(e);
-            }
+            assertThat(results).containsExactlyInAnyOrder(
+                    1, 0
+            );
         }
     }
 
@@ -82,18 +84,17 @@ class GithubSyncJobRepositoryIntegrationTest extends AbstractIntegrationTest {
         Long id = persistedSyncJob.getId();
 
         try (RaceConditionSimulator raceConditionSimulator = RaceConditionSimulator.getRaceConditionSimulator(2)) {
-            try {
-                List<Integer> results = raceConditionSimulator.execute(
-                        () -> transactionTemplate.execute(status ->
-                                githubSyncJobRepository.markSyncingFromSubmitted(id, fixedClock.instant())
-                        ));
+            var results = raceConditionSimulator.execute(
+                            () -> transactionTemplate.execute(status ->
+                                    githubSyncJobRepository.markSyncingFromSubmitted(id, fixedClock.instant())
+                            ))
+                    .stream()
+                    .map(TaskResult::result)
+                    .toList();
 
-                assertThat(results).containsExactlyInAnyOrder(
-                        1, 0
-                );
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                throw new RuntimeException(e);
-            }
+            assertThat(results).containsExactlyInAnyOrder(
+                    1, 0
+            );
         }
     }
 
@@ -106,23 +107,25 @@ class GithubSyncJobRepositoryIntegrationTest extends AbstractIntegrationTest {
         Long id = persistedSyncJob.getId();
 
         try (RaceConditionSimulator raceConditionSimulator = RaceConditionSimulator.getRaceConditionSimulator(2)) {
-            try {
-                List<Integer> results = raceConditionSimulator.execute(
-                        () -> transactionTemplate.execute(status ->
-                                githubSyncJobRepository.markReadyFromSyncing(id, fixedClock.instant(), fixedClock.instant().plus(1, ChronoUnit.HOURS))
-                        ));
 
-                assertThat(results).containsExactlyInAnyOrder(
-                        1, 0
-                );
+            TransactionCallback<Integer> callback =
+                    status ->
+                            githubSyncJobRepository.markReadyFromSyncing(id, fixedClock.instant(), fixedClock.instant().plus(1, ChronoUnit.HOURS));
 
-                GithubSyncJob updatedSyncJobs = githubSyncJobRepository
-                        .findById(id).orElseThrow();
-                assertThat(updatedSyncJobs
-                        .getNextRunAt()).isEqualTo(fixedClock.instant().plus(1, ChronoUnit.HOURS));
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                throw new RuntimeException(e);
-            }
+            Callable<Integer> integerCallable = () -> transactionTemplate.execute(callback);
+            var results = raceConditionSimulator.execute(integerCallable)
+                    .stream()
+                    .map(TaskResult::result)
+                    .toList();
+
+            assertThat(results).containsExactlyInAnyOrder(
+                    1, 0
+            );
+
+            GithubSyncJob updatedSyncJobs = githubSyncJobRepository
+                    .findById(id).orElseThrow();
+            assertThat(updatedSyncJobs
+                    .getNextRunAt()).isEqualTo(fixedClock.instant().plus(1, ChronoUnit.HOURS));
         }
     }
 
@@ -135,24 +138,23 @@ class GithubSyncJobRepositoryIntegrationTest extends AbstractIntegrationTest {
         Long id = persistedSyncJob.getId();
 
         try (RaceConditionSimulator raceConditionSimulator = RaceConditionSimulator.getRaceConditionSimulator(2)) {
-            try {
-                List<Integer> results = raceConditionSimulator.execute(
-                        () -> transactionTemplate.execute(status ->
-                                githubSyncJobRepository.markSyncFailedFromSyncing(id, fixedClock.instant())
-                        ));
+            List<Integer> results = raceConditionSimulator.execute(
+                            () -> transactionTemplate.execute(status ->
+                                    githubSyncJobRepository.markSyncFailedFromSyncing(id, fixedClock.instant())
+                            ))
+                    .stream()
+                    .map(TaskResult::result)
+                    .toList();
 
-                assertThat(results).containsExactlyInAnyOrder(
-                        1, 0
-                );
+            assertThat(results).containsExactlyInAnyOrder(
+                    1, 0
+            );
 
-                GithubSyncJob updatedSyncJobs = githubSyncJobRepository
-                        .findById(id).orElseThrow();
-                assertThat(updatedSyncJobs.getNextRunAt()).isNull();
-                assertThat(updatedSyncJobs.getFailedAt()).isNotNull();
+            GithubSyncJob updatedSyncJobs = githubSyncJobRepository
+                    .findById(id).orElseThrow();
+            assertThat(updatedSyncJobs.getNextRunAt()).isNull();
+            assertThat(updatedSyncJobs.getFailedAt()).isNotNull();
 
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                throw new RuntimeException(e);
-            }
         }
     }
 
