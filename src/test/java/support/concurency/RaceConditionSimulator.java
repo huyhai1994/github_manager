@@ -40,37 +40,55 @@ public class RaceConditionSimulator implements AutoCloseable {
         return new RaceConditionSimulator(concurrentRequestCount);
     }
 
-    public <T> List<T> execute(Callable<T> task)
-            throws InterruptedException,
-            ExecutionException,
-            TimeoutException {
+    public <T> List<T> execute(Callable<T> task) {
 
         List<CompletableFuture<T>> futures =
                 createConcurrentRequests(task);
+        awaitWorkersReady();
+        startRunningWorker();
+        awaitWorkersToFinish(futures);
+        return grabResult(futures);
+    }
 
-        boolean allWorkersReady = readyLatch.await(
-                READY_TIMEOUT.toMillis(),
-                TimeUnit.MILLISECONDS
-        );
+    private <T> List<T> grabResult(List<CompletableFuture<T>> futures) {
+        return futures.stream()
+                .map(CompletableFuture::join)
+                .toList();
+    }
+
+    private <T> void awaitWorkersToFinish(List<CompletableFuture<T>> futures) {
+        try {
+            CompletableFuture.allOf(
+                    futures.toArray(CompletableFuture[]::new)
+            ).get(
+                    EXECUTION_TIMEOUT.toMillis(),
+                    TimeUnit.MILLISECONDS
+            );
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void startRunningWorker() {
+        startLatch.countDown();
+    }
+
+    private void awaitWorkersReady() {
+        boolean allWorkersReady;
+        try {
+            allWorkersReady = readyLatch.await(
+                    READY_TIMEOUT.toMillis(),
+                    TimeUnit.MILLISECONDS
+            );
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
         if (!allWorkersReady) {
             throw new IllegalStateException(
                     "Not all concurrent workers became ready"
             );
         }
-
-        startLatch.countDown();
-
-        CompletableFuture.allOf(
-                futures.toArray(CompletableFuture[]::new)
-        ).get(
-                EXECUTION_TIMEOUT.toMillis(),
-                TimeUnit.MILLISECONDS
-        );
-
-        return futures.stream()
-                .map(CompletableFuture::join)
-                .toList();
     }
 
     private <T> List<CompletableFuture<T>> createConcurrentRequests(
