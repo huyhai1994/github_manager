@@ -1,10 +1,13 @@
 package support.concurency;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.*;
 import java.util.stream.IntStream;
 
+@Slf4j
 public class RaceConditionSimulator implements AutoCloseable {
 
     private static final Duration READY_TIMEOUT =
@@ -102,6 +105,7 @@ public class RaceConditionSimulator implements AutoCloseable {
                                         T result = executeTask(task);
                                         return TaskResult.success(result);
                                     } catch (Exception e) {
+                                        log.error(e.getMessage());
                                         return TaskResult.<T>failure(e);
                                     }
                                 },
@@ -117,11 +121,8 @@ public class RaceConditionSimulator implements AutoCloseable {
 
         try {
             return task.call();
-        } catch (Exception exception) {
-            throw new CompletionException(
-                    "Concurrent task execution failed",
-                    exception
-            );
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
     }
 

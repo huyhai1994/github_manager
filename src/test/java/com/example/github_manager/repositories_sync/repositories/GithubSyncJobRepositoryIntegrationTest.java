@@ -66,7 +66,7 @@ class GithubSyncJobRepositoryIntegrationTest extends AbstractIntegrationTest {
                             () -> transactionTemplate.execute(status ->
                                     githubSyncJobRepository.markSubmittedFromReady(id, fixedClock.instant())
                             )).stream()
-                    .map(r -> r.result())
+                    .map(TaskResult::result)
                     .toList();
 
             assertThat(results).containsExactlyInAnyOrder(
