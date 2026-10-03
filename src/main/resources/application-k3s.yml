@@ -1,0 +1,64 @@
+server:
+  port: ${SERVER_PORT:20999}
+
+spring:
+  application:
+    name: ${SPRING_APPLICATION_NAME:github-manager-service-k3s}
+
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
+
+    hikari:
+      maximum-pool-size: ${HIKARI_MAXIMUM_POOL_SIZE:5}
+      minimum-idle: ${HIKARI_MINIMUM_IDLE:1}
+      idle-timeout: ${HIKARI_IDLE_TIMEOUT:300000}
+      connection-timeout: ${HIKARI_CONNECTION_TIMEOUT:30000}
+      max-lifetime: ${HIKARI_MAX_LIFETIME:300000}
+
+  jpa:
+    hibernate:
+      ddl-auto: ${HIBERNATE_DDL_AUTO:none}
+
+    properties:
+      hibernate:
+        show-sql: ${JPA_SHOW_SQL:false}
+        jdbc:
+          batch_size: ${HIBERNATE_BATCH_SIZE:100}
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: ${LOG_HIBERNATE_SQL:INFO}
+        type:
+          descriptor:
+            sql:
+              BasicBinder: ${LOG_HIBERNATE_BINDER:INFO}
+        stat: ${LOG_HIBERNATE_STAT:INFO}
+        orm:
+          results: ${LOG_HIBERNATE_RESULTS:INFO}
+
+github-sync-executor:
+  core-pool-size: ${GITHUB_SYNC_CORE_POOL_SIZE:1}
+  maximum-pool-size: ${GITHUB_SYNC_MAXIMUM_POOL_SIZE:3}
+  queue-capacity: ${GITHUB_SYNC_QUEUE_CAPACITY:100}
+  thread-name-prefix: ${GITHUB_SYNC_THREAD_NAME_PREFIX:GithubSyncWorkerK3s-}
+
+github-sync-scheduler:
+  delay: ${GITHUB_SYNC_SCHEDULER_DELAY:10}
+
+clients:
+  github-service:
+    base-url: ${GITHUB_BASE_URL:https://api.github.com}
+    repos: ${OWNED_GITHUB_REPOS}
+    connect-timeout: ${GITHUB_CONNECT_TIMEOUT:3s}
+    read-timeout: ${GITHUB_READ_TIMEOUT:10s}
+    access-token: ${GITHUB_ACCESS_TOKEN}
+    get-repositories-path: ${GITHUB_GET_REPOSITORIES_PATH:/user/repos}
+    page-size: ${GITHUB_PAGE_SIZE:100}
+    media-type: ${GITHUB_MEDIA_TYPE:application/vnd.github+json}
+    path: ${GITHUB_PATH:/user/repos}
+    affiliation: ${GITHUB_AFFILIATION:owner}
+    api-version: ${GITHUB_API_VERSION:2022-11-28}
